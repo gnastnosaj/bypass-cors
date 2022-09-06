@@ -7,13 +7,14 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+var hc = &fasthttp.Client{}
+
 func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 	method := string(ctx.Method())
 	if method != "OPTIONS" {
 		url := string(ctx.RequestURI())[1:]
 		ctx.Request.SetRequestURI(url)
 
-		hc := &fasthttp.Client{}
 		err := hc.Do(&ctx.Request, &ctx.Response)
 		if err != nil {
 			fmt.Fprintf(ctx, err.Error())
