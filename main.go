@@ -30,7 +30,9 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 		if ctx.Response.Header.StatusCode() == http.StatusFound {
 			location := string(ctx.Response.Header.Peek("Location"))
 			if strings.HasPrefix(location, "magnet") {
+				ctx.Response.Header.Del("Location")
 				ctx.Response.SetStatusCode(http.StatusOK)
+				ctx.Response.SetBodyString(location)
 			} else {
 				uri.SetPath(location)
 				ctx.Response.Header.Set("Location", uri.String())
@@ -45,7 +47,7 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func main() {
-	var port = flag.String("p", "8888", "port")
+	var port = flag.String("p", "8080", "port")
 
 	flag.Parse()
 
