@@ -3,22 +3,38 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"strings"
 
 	"github.com/valyala/fasthttp"
 )
 
-var hc = &fasthttp.Client{}
+var fasthttpClient = &fasthttp.Client{}
 
 func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 	method := string(ctx.Method())
 	if method != "OPTIONS" {
+		uri := fasthttp.AcquireURI()
+		defer fasthttp.ReleaseURI(uri)
+		ctx.URI().CopyTo(uri)
+
 		url := string(ctx.RequestURI())[1:]
 		ctx.Request.SetRequestURI(url)
 
-		err := hc.Do(&ctx.Request, &ctx.Response)
+		err := fasthttpClient.Do(&ctx.Request, &ctx.Response)
 		if err != nil {
 			fmt.Fprintf(ctx, err.Error())
 			return
+		}
+
+		if ctx.Response.Header.StatusCode() == http.StatusFound {
+			location := string(ctx.Response.Header.Peek("Location"))
+			if strings.HasPrefix(location, "magnet") {
+				ctx.Response.SetStatusCode(http.StatusOK)
+			} else {
+				uri.SetPath(location)
+				ctx.Response.Header.Set("Location", uri.String())
+			}
 		}
 	}
 
@@ -29,7 +45,7 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 }
 
 func main() {
-	var port = flag.String("p", "8080", "port")
+	var port = flag.String("p", "8888", "port")
 
 	flag.Parse()
 
