@@ -23,6 +23,7 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 
 		err := fasthttpClient.Do(&ctx.Request, &ctx.Response)
 		if err != nil {
+			ctx.SetStatusCode(http.StatusInternalServerError)
 			fmt.Fprintf(ctx, err.Error())
 			return
 		}
