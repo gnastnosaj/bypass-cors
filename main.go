@@ -34,8 +34,8 @@ func fastHTTPHandler(ctx *fasthttp.RequestCtx) {
 				ctx.Response.SetStatusCode(http.StatusOK)
 				ctx.Response.SetBodyString(location)
 			} else {
-				uri.SetPath(location)
-				ctx.Response.Header.Set("Location", uri.String())
+				uri.SetPath("")
+				ctx.Response.Header.Set("Location", uri.String()+location)
 			}
 		}
 	}
